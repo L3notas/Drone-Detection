@@ -1,0 +1,7 @@
+# requirements.txt
+
+numpy
+opencv-python
+Pillow
+ultralytics
+sounddevice
