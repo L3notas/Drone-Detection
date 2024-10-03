@@ -1,3 +1,4 @@
+
 """
 Drone Detection System with OOP and Audio Detection
 This program uses a YOLO model to detect drones from a camera feed and basic audio detection.
@@ -39,32 +40,15 @@ import sounddevice as sd
 class DroneDetector:
     """
     Class to handle drone detection logic using the YOLO model and audio detection.
-
-    This class encapsulates the functionality for detecting drones in both video frames using a pre-trained YOLO model and in audio data using RMS thresholding. It provides methods to perform detection on image frames and audio data.
-
-    Attributes:
-        model (YOLO): The YOLO model used for image detection.
-        class_names (list): A list of class names that the YOLO model can detect.
-        detection_threshold (float): Confidence threshold for image detection.
-        audio_threshold (float): Threshold for audio detection.
-        audio_detection_active (bool): Flag indicating if audio detection is active.
     """
 
     def __init__(self, model_path, detection_threshold, audio_threshold):
         """
-        Initialize the DroneDetector with a YOLO model and detection parameters.
-
+        Initialize the YOLO model and set detection parameters.
         Args:
-            model_path (str): Path to the YOLO model weights file.
-            detection_threshold (float): Confidence threshold for image detection (0.0 to 1.0).
-            audio_threshold (float): Threshold for audio detection (positive float).
-
-        Raises:
-            Exception: If the YOLO model fails to load.
-            ValueError: If detection_threshold or audio_threshold are out of expected ranges.
-
-        Side Effects:
-            Loads the YOLO model from the specified path.
+            model_path (str): Path to the YOLO model weights.
+            detection_threshold (float): Confidence threshold for image detection.
+            audio_threshold (float): Threshold for audio detection.
         """
         try:
             self.model = YOLO(model_path)
@@ -78,24 +62,11 @@ class DroneDetector:
 
     def detect(self, frame):
         """
-        Perform drone detection on the given image frame using the YOLO model.
-
+        Perform detection on the given frame.
         Args:
             frame (numpy.ndarray): The image frame to perform detection on.
-
         Returns:
-            list: A list of detection details. Each detection is a dictionary containing:
-                - 'time' (str): The detection timestamp.
-                - 'confidence' (float): Confidence score of the detection.
-                - 'position' (tuple): Bounding box coordinates (x1, y1, x2, y2).
-                - 'label' (str): Label of the detected class with confidence.
-                - 'type' (str): Type of detection ('image').
-
-        Raises:
-            Exception: If an error occurs during detection processing.
-
-        Side Effects:
-            None.
+            list: A list of detection details.
         """
         detections = []
         results = self.model(frame)
@@ -107,7 +78,6 @@ class DroneDetector:
                     raise TypeError("Confidence value is not a float")
                 if conf >= self.detection_threshold:
                     x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
-                    # Round up the confidence to two decimal places
                     conf = math.ceil((conf * 100)) / 100
                     cls = int(box.cls[0])
                     if cls < 0 or cls >= len(self.class_names):
@@ -129,23 +99,10 @@ class DroneDetector:
     def detect_audio(self, duration=0.5):
         """
         Perform audio detection using the microphone.
-
         Args:
-            duration (float, optional): Duration to record audio in seconds. Defaults to 0.5.
-
+            duration (float): Duration to record audio in seconds.
         Returns:
             dict or None: Detection details if audio exceeds threshold, else None.
-                Detection details include:
-                - 'time' (str): The detection timestamp.
-                - 'confidence' (float): The RMS value of the audio signal.
-                - 'label' (str): Label indicating audio detection with RMS value.
-                - 'type' (str): Type of detection ('audio').
-
-        Raises:
-            Exception: If an error occurs during audio recording or processing.
-
-        Side Effects:
-            Records audio from the microphone.
         """
         try:
             # Record audio for the given duration
@@ -169,50 +126,13 @@ class DroneDetector:
 class DroneDetectionApp:
     """
     Main application class for the Drone Detection System.
-
-    This class sets up the GUI, initializes the drone detector, and handles user interactions. It manages the detection process, including starting, pausing, stopping detections, and displaying detection results.
-
-    Attributes:
-        root (Tk): The main Tkinter window.
-        detection_times (list): List of detection timestamps.
-        detection_details (list): List of detection detail dictionaries.
-        cap (cv2.VideoCapture): Video capture object for camera feed.
-        camera_feed_active (bool): Flag indicating if the camera feed is active.
-        start_time (float): Timestamp when the detection started.
-        elapsed_time (int): Elapsed time in seconds.
-        running (bool): Flag indicating if detection is running.
-        video_label (Label): Tkinter Label widget for video feed.
-        config (ConfigParser): Configuration parser for settings.
-        detection_threshold (float): Confidence threshold for image detection.
-        audio_threshold (float): Threshold for audio detection.
-        language (str): Selected language for the application ('English' or 'French').
-        dark_mode (bool): Flag indicating if dark mode is enabled.
-        detector (DroneDetector): Instance of DroneDetector for detection.
-        alert_history_dir (str): Directory path for saving alert history.
-
-    Raises:
-        Exception: If any initialization step fails.
-
-    Side Effects:
-        Creates GUI elements and initializes settings.
     """
 
     def __init__(self, root):
         """
-        Initialize the DroneDetectionApp, load settings, and set up the GUI.
-
+        Initialize the application, load settings, and set up the GUI.
         Args:
             root (Tk): The main Tkinter window.
-
-        Side Effects:
-            - Loads settings from 'settings.ini'.
-            - Initializes the DroneDetector instance.
-            - Sets up GUI elements.
-            - Binds events and configures the main window.
-            - Ensures the alert history directory exists.
-
-        Raises:
-            Exception: If any initialization step fails.
         """
         self.root = root
         self.root.title("Drone Detection System")
@@ -262,19 +182,7 @@ class DroneDetectionApp:
     def load_settings(self):
         """
         Load settings from 'settings.ini' configuration file.
-
-        Updates instance variables:
-            - detection_threshold (float): Confidence threshold for image detection.
-            - audio_threshold (float): Threshold for audio detection.
-            - language (str): Selected language ('English' or 'French').
-            - dark_mode (bool): Flag indicating if dark mode is enabled.
-
-        Side Effects:
-            - Reads 'settings.ini' and updates application settings.
-            - Sets locale based on the selected language.
-
-        Raises:
-            Exception: If there is an error reading the configuration file or setting the locale.
+        Updates instance variables: detection_threshold, language, dark_mode, audio_threshold.
         """
         self.config.read("settings.ini")
         self.detection_threshold = self.config.getfloat(
@@ -297,12 +205,6 @@ class DroneDetectionApp:
     def save_settings(self):
         """
         Save current settings to 'settings.ini' configuration file.
-
-        Side Effects:
-            - Writes current settings to 'settings.ini'.
-
-        Raises:
-            Exception: If there is an error writing to the configuration file.
         """
         self.config["Settings"] = {
             "detection_threshold": str(self.detection_threshold),
@@ -316,12 +218,6 @@ class DroneDetectionApp:
     def apply_theme(self):
         """
         Apply GUI theme based on the 'dark_mode' setting.
-
-        Side Effects:
-            - Updates the styles and colors of GUI elements to match the selected theme.
-
-        Raises:
-            Exception: If there is an error applying the theme.
         """
         if self.dark_mode:
             self.style.theme_use("alt")
@@ -342,16 +238,11 @@ class DroneDetectionApp:
 
     def format_time(self, seconds):
         """
-        Format elapsed time in seconds into a HH:MM:SS string.
-
+        Format elapsed time in seconds into HH:MM:SS string.
         Args:
             seconds (int): The number of seconds elapsed.
-
         Returns:
-            str: Formatted time string in the format 'HH:MM:SS'.
-
-        Side Effects:
-            None.
+            str: Formatted time string.
         """
         mins, secs = divmod(seconds, 60)
         hours, mins = divmod(mins, 60)
@@ -360,30 +251,16 @@ class DroneDetectionApp:
     def update_time(self):
         """
         Update the time label with the elapsed time.
-
-        Side Effects:
-            - Updates the time label in the GUI every second if detection is running.
-
-        Raises:
-            Exception: If there is an error updating the time.
         """
         if self.running:
             current_time = time.time()
             self.elapsed_time = int(current_time - self.start_time)
             self.time_label.config(text=self.format_time(self.elapsed_time))
-            self.root.after(1000, self.update_time)  # Schedule the next update after 1 second
+            self.root.after(1000, self.update_time)
 
     def start_timer_and_detection(self):
         """
         Start the timer and begin the drone detection process.
-
-        Side Effects:
-            - Sets the running flag to True.
-            - Initializes the start time.
-            - Starts threads for image and audio detection.
-
-        Raises:
-            Exception: If the camera cannot be accessed or any detection thread fails to start.
         """
         if not self.running:
             self.running = True
@@ -402,22 +279,12 @@ class DroneDetectionApp:
     def pause_timer_and_detection(self):
         """
         Pause the timer and the drone detection process without resetting.
-
-        Side Effects:
-            - Sets the running flag to False, pausing detection and timer updates.
         """
         self.running = False
 
     def stop_timer_and_detection(self):
         """
         Stop the timer and the drone detection process.
-
-        Side Effects:
-            - Sets the running flag to False.
-            - Resets the start time and elapsed time.
-            - Exports detections to XML.
-            - Clears detection data.
-            - Releases the camera if it is open.
         """
         self.running = False
         self.start_time = None
@@ -431,64 +298,39 @@ class DroneDetectionApp:
 
     def run_detection(self):
         """
-        Run the drone image detection process in a separate thread.
-
-        Side Effects:
-            - Continuously captures frames from the camera.
-            - Performs detection on each frame.
-            - Appends detections to detection lists.
-            - Plays a beep sound on detection.
-
-        Raises:
-            Exception: If there is an error during image capture or detection.
+        Run the drone detection process.
         """
         while self.running:
             try:
                 success, img = self.cap.read()
                 if not success:
-                    break  # Break the loop if frame capture fails
+                    break
                 detections = self.detector.detect(img)
                 for detection in detections:
                     self.detection_times.append(detection["time"])
                     self.detection_details.append(detection)
-                    self.save_detection_snapshot(img)  # Save a snapshot when detection occurs
-                    winsound.Beep(1000, 500)  # Play a beep sound
-                time.sleep(0.1)  # Sleep briefly to reduce CPU usage
+                    self.save_detection_snapshot(img)
+                    winsound.Beep(1000, 500)
+                time.sleep(0.1)
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")
                 break
 
     def run_audio_detection(self):
         """
-        Run the audio detection process in a separate thread.
-
-        Side Effects:
-            - Continuously records audio and checks for detections.
-            - Appends detections to detection lists.
-            - Plays a beep sound on audio detection.
-
-        Raises:
-            Exception: If there is an error during audio recording or detection.
+        Run the audio detection process.
         """
         while self.running:
             detection = self.detector.detect_audio()
             if detection:
                 self.detection_times.append(detection["time"])
                 self.detection_details.append(detection)
-                winsound.Beep(1500, 500)  # Play a different beep sound for audio detection
-            time.sleep(0.5)  # Sleep to control detection frequency
+                winsound.Beep(1500, 500)
+            time.sleep(0.5)
 
     def toggle_camera_feed(self):
         """
         Toggle the display of the camera feed in the GUI.
-
-        Side Effects:
-            - Starts or stops the camera feed display.
-            - Updates the camera feed button text.
-            - Starts a thread to update the video feed if activated.
-
-        Raises:
-            Exception: If the camera cannot be accessed.
         """
         if not self.camera_feed_active:
             self.camera_feed_active = True
@@ -518,13 +360,6 @@ class DroneDetectionApp:
     def create_video_feed_label(self):
         """
         Create or update the label widget used to display the video feed.
-
-        Side Effects:
-            - Creates a Label widget for the video feed if it doesn't exist.
-            - Binds window resize event to adjust video feed size.
-
-        Raises:
-            Exception: If there is an error creating the Label widget.
         """
         if not self.video_label:
             self.video_label = Label(self.root, bg="#66677E")
@@ -536,14 +371,6 @@ class DroneDetectionApp:
     def update_video_feed(self):
         """
         Continuously update the video feed in the GUI.
-
-        Side Effects:
-            - Reads frames from the camera.
-            - Performs detection and draws bounding boxes.
-            - Updates the video feed Label with the latest frame.
-
-        Raises:
-            Exception: If there is an error reading frames or updating the GUI.
         """
         while self.camera_feed_active:
             try:
@@ -566,7 +393,6 @@ class DroneDetectionApp:
                     )
                 cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(cv2image)
-                # Resize the image to fit the video label
                 img = img.resize((self.video_label.winfo_width(), self.video_label.winfo_height()))
                 imgtk = ImageTk.PhotoImage(image=img)
                 self.video_label.imgtk = imgtk
@@ -579,12 +405,8 @@ class DroneDetectionApp:
     def on_window_resize(self, event):
         """
         Adjust the size of the video feed label when the window is resized.
-
         Args:
-            event (Event): The resize event.
-
-        Side Effects:
-            - Resizes the video feed Label to match the new window size.
+            event: The resize event.
         """
         if self.camera_feed_active:
             self.video_label.config(
@@ -595,15 +417,8 @@ class DroneDetectionApp:
     def save_detection_snapshot(self, frame):
         """
         Save a snapshot image of the current frame when a detection occurs.
-
         Args:
             frame (numpy.ndarray): The image frame to save.
-
-        Side Effects:
-            - Saves the frame to the 'snapshots' directory with a timestamped filename.
-
-        Raises:
-            Exception: If there is an error saving the snapshot.
         """
         snapshot_dir = "snapshots"
         if not os.path.exists(snapshot_dir):
@@ -618,12 +433,6 @@ class DroneDetectionApp:
     def export_detections_to_xml(self):
         """
         Export the current detection details to an XML file.
-
-        Side Effects:
-            - Writes an XML file containing detection details to the alert history directory.
-
-        Raises:
-            Exception: If there is an error writing the XML file.
         """
         if not self.detection_times:
             print("No detections to export.")
@@ -651,14 +460,7 @@ class DroneDetectionApp:
 
     def open_settings_window(self):
         """
-        Open the settings window where users can adjust detection thresholds and language.
-
-        Side Effects:
-            - Creates a new Tkinter Toplevel window for settings.
-            - Allows users to change detection thresholds, language, and saves settings.
-
-        Raises:
-            Exception: If there is an error creating the settings window or saving settings.
+        Open the settings window where users can adjust detection threshold and language.
         """
         settings_window = Toplevel(self.root)
         settings_window.title("Settings" if self.language == "English" else "Paramètres")
@@ -666,16 +468,6 @@ class DroneDetectionApp:
         settings_window.configure(bg="#FFFFFF")
 
         def on_threshold_change(val):
-            """
-            Handle changes to the detection threshold slider.
-
-            Args:
-                val (str): The new threshold value from the slider.
-
-            Side Effects:
-                - Updates the detection threshold.
-                - Saves the new setting.
-            """
             try:
                 self.detection_threshold = float(val) / 100
                 if not (0.0 <= self.detection_threshold <= 1.0):
@@ -686,16 +478,6 @@ class DroneDetectionApp:
                 messagebox.showerror("Error", "Invalid threshold value.")
 
         def on_audio_threshold_change(val):
-            """
-            Handle changes to the audio threshold slider.
-
-            Args:
-                val (str): The new audio threshold value from the slider.
-
-            Side Effects:
-                - Updates the audio detection threshold.
-                - Saves the new setting.
-            """
             try:
                 self.audio_threshold = float(val) / 1000
                 if self.audio_threshold < 0:
@@ -738,17 +520,6 @@ class DroneDetectionApp:
         audio_threshold_scale.pack()
 
         def on_language_change(selection):
-            """
-            Handle changes to the language selection.
-
-            Args:
-                selection (str): The selected language.
-
-            Side Effects:
-                - Updates the language setting.
-                - Saves the new setting.
-                - Updates the GUI language.
-            """
             if selection not in ["English", "French"]:
                 messagebox.showerror("Error", "Unsupported language selected.")
                 return
@@ -778,9 +549,6 @@ class DroneDetectionApp:
     def update_language(self):
         """
         Update the text of GUI elements based on the selected language.
-
-        Side Effects:
-            - Updates the text of buttons and labels to match the selected language.
         """
         if self.language == "English":
             self.btn_start.config(text="Start")
@@ -809,12 +577,6 @@ class DroneDetectionApp:
     def open_current_alerts_window(self):
         """
         Open a window displaying current detections in the ongoing detection cycle.
-
-        Side Effects:
-            - Creates a new Tkinter Toplevel window displaying the current detection list.
-
-        Raises:
-            Exception: If there is an error creating the window or displaying detections.
         """
         current_alerts_window = Toplevel(self.root)
         if self.language == "French":
@@ -866,12 +628,6 @@ class DroneDetectionApp:
     def open_alert_history_window(self):
         """
         Open a window displaying historical detections from previous detection cycles.
-
-        Side Effects:
-            - Creates a new Tkinter Toplevel window displaying alert history from XML files.
-
-        Raises:
-            Exception: If there is an error reading XML files or creating the window.
         """
         alert_history_window = Toplevel(self.root)
         if self.language == "French":
@@ -954,14 +710,6 @@ class DroneDetectionApp:
     def on_main_window_closing(self):
         """
         Handler for the main window closing event.
-
-        Side Effects:
-            - Stops detection and camera feed.
-            - Releases camera resources.
-            - Destroys the main window.
-
-        Raises:
-            Exception: If there is an error releasing resources.
         """
         self.running = False
         self.camera_feed_active = False
@@ -972,13 +720,6 @@ class DroneDetectionApp:
     def setup_gui(self):
         """
         Set up the GUI elements.
-
-        Side Effects:
-            - Creates and places all GUI widgets (buttons, labels, canvas, etc.).
-            - Configures menu bar and binds events.
-
-        Raises:
-            Exception: If there is an error setting up the GUI elements.
         """
         canvas = Canvas(
             self.root,
@@ -1061,12 +802,6 @@ class DroneDetectionApp:
         menu_bar.add_cascade(label="Help" if self.language == "English" else "Aide", menu=help_menu)
 
         def show_help():
-            """
-            Display the help information in a message box.
-
-            Side Effects:
-                - Shows a message box with help and troubleshooting information.
-            """
             help_text = (
                 "Drone Detection System Help\n\n"
                 "Start: Begin the detection cycle.\n"
@@ -1076,11 +811,7 @@ class DroneDetectionApp:
                 "Current Alerts: View detections from the current cycle.\n"
                 "Alert History: View detections from previous cycles.\n"
                 "Camera Feed: Toggle the video feed display.\n"
-                "Dark Mode: Toggle between light and dark themes.\n\n"
-                "Troubleshooting:\n"
-                "- If the camera cannot be accessed, ensure it is connected and not used by another application.\n"
-                "- If audio detection fails, check your microphone settings.\n"
-                "- For further assistance, refer to the documentation."
+                "Dark Mode: Toggle between light and dark themes."
             )
             messagebox.showinfo("Help", help_text)
 
@@ -1094,13 +825,6 @@ class DroneDetectionApp:
         menu_bar.add_cascade(label="Theme", menu=theme_menu)
 
         def toggle_dark_mode():
-            """
-            Toggle the dark mode theme.
-
-            Side Effects:
-                - Switches between light and dark themes.
-                - Saves the new theme setting.
-            """
             self.dark_mode = not self.dark_mode
             self.apply_theme()
             self.save_settings()
@@ -1113,12 +837,6 @@ class DroneDetectionApp:
     def run(self):
         """
         Start the main GUI event loop.
-
-        Side Effects:
-            - Enters the Tkinter main loop.
-
-        Raises:
-            Exception: If there is an error running the main loop.
         """
         self.root.mainloop()
 
@@ -1126,30 +844,3 @@ class DroneDetectionApp:
 if __name__ == "__main__":
     app = DroneDetectionApp(Tk())
     app.run()
-
-"""
-FAQ / Troubleshooting Guide:
-
-Q: The application cannot access the camera. What should I do?
-A: Ensure that your camera is properly connected and not being used by another application. Check that your camera drivers are up to date.
-
-Q: I receive an error 'Failed to load the model'. What does this mean?
-A: This error occurs if the YOLO model cannot be loaded. Ensure that the model path is correct and the model file exists. Also, make sure all required dependencies are installed.
-
-Q: The application crashes when starting audio detection. What could be the problem?
-A: This might happen if your microphone is not properly configured or accessible. Check that your microphone is connected and not being used by another application.
-
-Q: Detections are not being saved or exported correctly.
-A: Ensure that the application has write permissions to the directories where snapshots and XML files are saved. Check for any error messages in the console or logs.
-
-Q: The GUI elements are not displayed correctly.
-A: This could be due to an issue with the Tkinter theme or styles. Try changing the theme or updating your Tkinter installation.
-
-Q: How do I change the language or detection thresholds?
-A: Go to the 'Settings' window to adjust detection thresholds and select the language.
-
-Q: I want to clear the alert history. How can I do that?
-A: You can manually delete the XML files in the 'alert_history' directory to clear the alert history.
-
-
-"""
