@@ -2,13 +2,13 @@ import cv2
 from ultralytics import YOLO
 
 # Load the YOLOv8 model (use the appropriate model file or path here)
-model = YOLO('C:/Users/liam_/OneDrive/Desktop/Applied Computing/runs/detect/train19/weights/best.pt')  # 'yolov8n.pt' is the YOLOv8 nano model
+model = YOLO('C:/Users/liam_/OneDrive/Documents/Drone-Detection/Drone-Detection/models/best.pt')  # 'yolov8n.pt' is the YOLOv8 nano model
 
 # Open the video file
-video_path = 'C:/Users/liam_/OneDrive/Desktop/Applied Computing/Testing video/stock-footage-capturing-a-drone-flying-in-the-sky-in-local-area-of-feltham-london.mp4'  # Replace with your video file path
+video_path = 'C:/Users/liam_/OneDrive/Documents/Drone-Detection/Drone-Detection/tests/Test Video/drone video 5 cloudy good lighting.mp4'  # repace with your video file path
 cap = cv2.VideoCapture(video_path)
 
-# Get video details (optional)
+# Get video details
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fps = cap.get(cv2.CAP_PROP_FPS)
